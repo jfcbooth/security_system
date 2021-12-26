@@ -13,6 +13,7 @@ import os
 import tempfile
 import shutil
 import argparse
+import sys
 
 from detection import run_tf_detector_batch
 from visualization import visualize_detector_output
@@ -43,7 +44,6 @@ class ProcessVideoOptions:
 
 
 def process_video(options):
-
     if options.output_json_file is None:
         options.output_json_file = options.input_video_file + '.json'
 
