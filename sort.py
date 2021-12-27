@@ -65,7 +65,7 @@ def find_mp4s(media_dir):
     return filenames
 
 # views added files to the evaluation directory
-def watcher():
+def process_directory():
     files = find_mp4s(media_dir)
     for file in files:
         basename = os.path.splitext(file)[0]
@@ -99,7 +99,6 @@ def watcher():
         category = find_category(json_file)
         print("Max category was: {}, or {} for {}".format(category, categories[str(category)], json_file))
 
-
 	    # make output video in correct folder
         #detections_file = os.path.join(media_dir, categories[str(category)], basename+'_detections.mp4')
         #detections_path = os.path.join(temp_dir, file + '_detections')
@@ -112,22 +111,19 @@ def watcher():
             # Move original video into correct folder
             shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)], 'originals/'))
 
-            # remove detections
-            #shutil.rmtree(detections_path)
+            # delete json file
+            os.remove(json_file)
+
         else:
             os.remove(os.path.join(evaling_dir, file)) # delete the motion file if nothing was in it
 
-        # delete json file
-        os.remove(json_file)
+
 
         
 
 
 
 if __name__ == "__main__":
-    # print(evaling_dir)
-    # print(uneval_dir)
-    # print(media_dir)
-    watcher()
+    process_directory()
 
     # # send email
