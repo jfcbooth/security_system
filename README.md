@@ -1,7 +1,16 @@
 # Setup
-Clone [CameraTraps](https://github.com/microsoft/CameraTraps)
-Clone [ai4eutils](https://github.com/microsoft/ai4eutils)
-Download model [here](https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb), more info on the [Megadetector github page](https://github.com/microsoft/CameraTraps/blob/master/megadetector.md)
+
+To make this work, you need to setup both the server side and camera side.
+## Server side installations
+1. Clone [CameraTraps](https://github.com/microsoft/CameraTraps)
+2. Clone [ai4eutils](https://github.com/microsoft/ai4eutils)
+3. Download model [here](https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb), more info on the [Megadetector github page](https://github.com/microsoft/CameraTraps/blob/master/megadetector.md)
+4. Install miniconda
+5. Install cameratraps-detector environment in Cameratraps
+6. Put libraries into conda environment: `cp -r CameraTraps/* ~/miniconda3/envs/cameratraps-detector/lib/python3.7/site-packages/
+cp -r ai4eutils/* ~/miniconda3/envs/cameratraps-detector/lib/python3.7/site-packages/`
+7. Set media directory in `monitor.py`
+8. Setup apache server (set installation directory in httpd.conf) and install as a service
 
 
 # security_system
@@ -12,9 +21,9 @@ As of Dec. 18th 2021, the workflow will go as follows:
 1. Setup cheap motion detecting cameras throughout his kansas property using solar panels for power.
 The property will have weak wifi, so we need to limit video throughput as much as possible
 
-2. Video that has motion is transferred back to the central hub (hopefully just a GPU-enabled computer on his property) and the video is evaluated. It will be sorted into 5 categories: human, animal, vehicle, other, false_positive.
+2. Video that has motion is transferred back to the central hub (hopefully just a GPU-enabled computer on his property) and the video is evaluated. It will be sorted into 3 categories: human, animal, vehicle, and others will be deleted
 
-3. Notifications will be sent out appropriately depending on the videos added (mainly just humand or vehicle)
+3. Notifications will be sent out appropriately depending on the videos added (mainly just humans or vehicles)
 
 Notes:
 Mark wants as much of the raw footage as possible, probably if an issue arises on his property. Most likely, we will only be able to store a week's worth of footage per camera. We should issue a command to stop recording if the footage needs to be manually collected.
@@ -34,7 +43,8 @@ Make sure tensorflow-gpu is set in the environment-detector.yml file and install
 2. ~~Get the cameratrap repo to evaluate on an image to check if it's any good~~
 3. ~~Setup 1 motion detecting camera~~
 4. ~~feed it's footage into the cameratrap docker~~
-5. setup SMTP server to send emails on certain detections
+5. ~~send emails on certain detections~~
+6. attach video clip to email on detection
 6. Setup camera to record and detect motion
 7. daemonize sort.py
 8. daemonize camera & streamline setup

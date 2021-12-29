@@ -19,7 +19,6 @@ Sorts images into folders for indexing based on the category discoverted (vehicl
 media_dir = 'C:/Users/boothm/Desktop/security_system/media/'
 uneval_dir = os.path.join(media_dir,'unevaluated/')
 evaling_dir = os.path.join(uneval_dir, '.evaluating/')
-temp_dir = 'C:/Users/boothm/AppData/Local/Temp/process_camera_trap_video/'
 categories = {'0': 'none', '1': 'animal', '2': 'person', '3': 'vehicle'}
 
 
