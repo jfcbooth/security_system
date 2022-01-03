@@ -2,35 +2,37 @@ import smtplib
 import shutil
 import os
 
-apache_media_dir = "C:\Apache24\htdocs\media\"
+apache_media_dir = "C:/Apache24/htdocs/media/"
 
 def send_email(category, file_loc):
-categories = {'0': 'none', '1': 'animal', '2': 'person', '3': 'vehicle'}
-gmail_user = 'boothcamerasystem@gmail.com'
-gmail_password = 'grizzly2000'
+    categories = {'0': 'none', '1': 'animal', '2': 'person', '3': 'vehicle'}
+    gmail_user = 'boothcamerasystem@gmail.com'
+    gmail_password = 'grizzly2000'
 
-FROM = gmail_user
-TO = 'boothcrap@gmail.com'
+    FROM = gmail_user
+    TO = 'boothcrap@gmail.com'
 
-SUBJECT = 'identified'
-shutil.copy(file_loc, os.path.join(apache_media_dir, categories[str(category)])) # move 
+    SUBJECT = 'identified'
 
-if(categories == 2):
-    SUBJECT = 'person ' + subject
-if(category == 3):
-    SUBJECT = 'vehicle' + subject
+    # move media to appropriate folder
+    shutil.copy(file_loc, os.path.join(apache_media_dir, categories[str(category)]))
 
-body = 'Test email content'
+    if(categories == 2):
+        SUBJECT = 'person ' + subject
+    if(category == 3):
+        SUBJECT = 'vehicle' + subject
 
-message = 'Subject: {}\n\n{}'.format(SUBJECT, body)
+    body = 'Test email content'
 
-try:
-    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    server.ehlo()
-    server.login(gmail_user, gmail_password)
-    server.sendmail(FROM, TO, message)
-    server.close()
+    message = 'Subject: {}\n\n{}'.format(SUBJECT, body)
 
-    print('Email sent.')
-except:
-    print('Error: Email not sent.')
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(gmail_user, gmail_password)
+        server.sendmail(FROM, TO, message)
+        server.close()
+
+        print('Email sent.')
+    except:
+        print('Error: Email not sent.')
