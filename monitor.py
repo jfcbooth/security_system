@@ -17,7 +17,7 @@ Sorts images into folders for indexing based on the category discoverted (vehicl
 # input file: /security_system/media/unevaluated/.evaluating/test.mp4
 # input json json: /security_system/media/unevaludated/.evaluating/test.mp4.json
 
-media_dir = 'C:/Users/boothm/Desktop/security_system/media/'
+media_dir = 'C:/Users/user/Desktop/security_system/media/'
 uneval_dir = os.path.join(media_dir,'unevaluated/')
 evaling_dir = os.path.join(uneval_dir, '.evaluating/')
 categories = {'0': 'none', '1': 'animal', '2': 'person', '3': 'vehicle'}
@@ -89,24 +89,37 @@ def process_directory():
         else:
     
             # move detections video into correct folder
-            shutil.move(detections_file, os.path.join(media_dir, categories[str(category)]))
+            shutil.move(detections_file, os.path.join(media_dir, categories[str(category)], 'detections/'))
 
             # Move original video into correct folder
-            shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)], 'originals/'))
+            shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)]))
 
             # delete json file
             os.remove(json_file)
 
-            if(category > 1):
-                send_email(category, os.path.join(media_dir, categories[str(category)], 'originals/', file))
+            if(category > 1): # send email if a concerning category
+                send_email(category, os.path.join(media_dir, categories[str(category)], file))
 
-
-
-        
-
-
+def check_dirs():
+    if not os.path.exists(media_dir):
+        print("Media directiory {} does not exist. Exiting.".format(media_dir))
+        sys.exit(-1)
+    
+    dirs = [uneval_dir, evaling_dir] + \
+            [os.path.join(media_dir, x[1]) and os.path.join(media_dir, x[1], 'detections/') for x in categories.items() if x[1] != 'none']
+    
+    for dir in dirs:
+        if not os.path.exists(dir):
+            try:
+                os.mkdir(dir)
+                print("Directory: {} not found. Created.".format(dir))
+            except:
+                print("Unable to make directory {}. Exiting.".format(dir))
+                sys.exit(-1)
+   
 
 if __name__ == "__main__":
+    check_dirs()
     process_directory()
 
     # # send email
