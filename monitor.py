@@ -93,8 +93,8 @@ def process_directory():
             os.remove(json_file)
 
             if(category > email_category_threshold): # send email if a concerning category, normally > 1
-                hosted_file_location = os.path.join(hosted_name, categories[str(category)], file)
-                detections_file_location = os.path.join(hosted_name, categories[str(category)], 'detections/', detections_file_basename)
+                hosted_file_location = os.path.join(hosted_name, categories[str(category)], file).replace("\\","/")
+                detections_file_location = os.path.join(hosted_name, categories[str(category)], 'detections/', detections_file_basename).replace("\\","/")
                 print(hosted_file_location)
                 print(detections_file_location)
                 send_email(categories[str(category)], hosted_file_location, detections_file_location)

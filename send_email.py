@@ -12,8 +12,8 @@ def send_email(category_name, video_file_loc, detections_file_loc):
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
 
-    msg['From'] = msg_to
-    msg['To'] = msg_from
+    msg['From'] = msg_from
+    msg['To'] = msg_to
 
     if(category_name == 'animal'):
         msg['Subject'] = 'Animal Identified - {}'.format(os.path.basename(video_file_loc))
