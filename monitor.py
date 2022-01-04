@@ -8,48 +8,44 @@ import sys
 import process_video
 from ct_utils import args_to_object
 from send_email import send_email
-
+import webpages
 
 '''
 Sorts images into folders for indexing based on the category discoverted (vehicle, human, animal). In the event of two categories, vehicle gets priority, then person, then animal.
 '''
 
-# input file: /security_system/media/unevaluated/.evaluating/test.mp4
-# input json json: /security_system/media/unevaludated/.evaluating/test.mp4.json
-
 media_dir = 'C:/Users/user/Desktop/security_system/media/'
+hosted_name = 'localhost'
+email_category_threshold = 0
+
 uneval_dir = os.path.join(media_dir,'unevaluated/')
 evaling_dir = os.path.join(uneval_dir, '.evaluating/')
 categories = {'0': 'none', '1': 'animal', '2': 'person', '3': 'vehicle'}
 
 
-def find_category(json_file):
+def find_category(json_file): # returns int of category
     if not os.path.exists(json_file):
         return 0
     category = 0
     fp = open(json_file)
     data = json.load(fp)
     fp.close()
-    # 0 = none
-    # 1 = animal
-    # 2 = human
-    # 3 = vehicle
     for image in data['images']:
         for detection in image['detections']:
             if(int(detection['category']) > category):
                     category = int(detection['category'])
     return(category)
 
-def find_mp4s(media_dir):
-    filenames = [f for f in os.listdir(uneval_dir) if os.path.isfile(os.path.join(uneval_dir, f)) and f.lower().endswith('.mp4')] # extracts filenames
+def find_video_files(media_dir):
+    allowed_video_formats = ('.mp4', '.webm')
+    filenames = [f for f in os.listdir(uneval_dir) if os.path.isfile(os.path.join(uneval_dir, f)) and f.lower().endswith(allowed_video_formats)] # extracts filenames
     return filenames
 
 # views added files to the evaluation directory
 def process_directory():
-    files = find_mp4s(media_dir)
+    files = find_video_files(media_dir)
     for file in files:
         basename = os.path.splitext(file)[0]
-        extension = os.path.splitext(file)[1]
         json_file = os.path.join(evaling_dir, file+'.json')
         detections_file = os.path.join(evaling_dir, basename+'_detections.mp4')
 
@@ -69,9 +65,9 @@ def process_directory():
         options.reuse_results_if_available = False
 
         options.confidence_threshold = 0.8
-        options.n_cores = 1
+        options.n_cores = 3
 
-        options.debug_max_frames = -1
+        options.debug_max_frames = 3
 
         # process the video
         process_video.process_video(options)
@@ -87,24 +83,27 @@ def process_directory():
         if not category: # no detections were found
             os.remove(os.path.join(evaling_dir, file)) # delete the motion file if nothing was in it
         else:
-    
-            # move detections video into correct folder
-            shutil.move(detections_file, os.path.join(media_dir, categories[str(category)], 'detections/'))
-
             # Move original video into correct folder
             shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)]))
-
+            
+            # move detections video into correct folder
+            shutil.move(detections_file, os.path.join(media_dir, categories[str(category)], 'detections/'))
+    
             # delete json file
             os.remove(json_file)
 
-            if(category > 1): # send email if a concerning category
-                send_email(category, os.path.join(media_dir, categories[str(category)], file))
+            if(category > email_category_threshold): # send email if a concerning category, normally > 1
+                hosted_file_location = os.path.join(hosted_name, categories[str(category)], file)
+                send_email(categories[str(category)], hosted_file_location)
 
 def check_dirs():
     if not os.path.exists(media_dir):
         print("Media directiory {} does not exist. Exiting.".format(media_dir))
         sys.exit(-1)
+
     
+    
+    # puts all directories into a single list
     dirs = [uneval_dir, evaling_dir] + \
             [os.path.join(media_dir, x[1]) and os.path.join(media_dir, x[1], 'detections/') for x in categories.items() if x[1] != 'none']
     
@@ -121,5 +120,3 @@ def check_dirs():
 if __name__ == "__main__":
     check_dirs()
     process_directory()
-
-    # # send email

@@ -11,6 +11,8 @@ To make this work, you need to setup both the server side and camera side.
 cp -r ai4eutils/* ~/miniconda3/envs/cameratraps-detector/lib/python3.7/site-packages/`
 7. Set media directory in `monitor.py`
 8. Setup apache server (set installation directory in httpd.conf) and install as a service
+9. Remember to change document root to media folder in apache server
+10. Remove im.show() from cameratraps make video package
 
 
 # security_system
