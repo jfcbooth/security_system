@@ -5,7 +5,7 @@ import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-def send_email(category_name, video_file_loc):
+def send_email(category_name, video_file_loc, detections_file_loc):
     msg_to = 'boothcrap@gmail.com'
     msg_from = 'boothcamerasystem@gmail.com'
     gmail_password = 'grizzly2000'
@@ -16,25 +16,25 @@ def send_email(category_name, video_file_loc):
     msg['To'] = msg_from
 
     if(category_name == 'animal'):
-        msg['Subject'] = 'Animal Identified'
+        msg['Subject'] = 'Animal Identified - {}'.format(os.path.basename(video_file_loc))
     elif(category_name == 'person'):
-        msg['Subject'] = 'Person Identified'
+        msg['Subject'] = 'Person Identified - {}'.format(os.path.basename(video_file_loc))
     elif(category_name == 'vehicle'):
-        msg['Subject'] = 'Vehicle Identified'
+        msg['Subject'] = 'Vehicle Identified - {}'.format(os.path.basename(video_file_loc))
     else:
         msg['Subject'] = 'Error: Nothing detected. Please report to sysadmin'
 
     # Create the body of the message (a plain-text and an HTML version).
-    text = "Video viewable at: {}".format(video_file_loc)
+    text = "Video viewable at: {0}\nVideo with detections outlined viewable at: {1}".format(video_file_loc, detections_file_loc)
     html = """\
     <html>
     <head></head>
     <body>
-        <p>Video viewable at: <a href="{0}">{0}</a>
-        </p>
+        <p>Video viewable at: <a href="{0}">{0}</a></p>
+        <p>Video with detections outlined viewable at: <a href="{1}">{1}</a></p>
     </body>
     </html>
-    """.format(video_file_loc)
+    """.format(video_file_loc, detections_file_loc)
 
     # Record the MIME types of both parts - text/plain and text/html.
     part1 = MIMEText(text, 'plain')
@@ -58,4 +58,4 @@ def send_email(category_name, video_file_loc):
         print('Error: Email not sent.')
 
 if __name__ == "__main__":
-    send_email('animal', 'localhost/animal/my_test.webm')
+    send_email('animal', 'localhost/animal/my_test.mp4', 'localhost/animal/detections/my_test_detections.mp4')

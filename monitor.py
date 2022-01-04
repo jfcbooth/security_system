@@ -8,7 +8,6 @@ import sys
 import process_video
 from ct_utils import args_to_object
 from send_email import send_email
-import webpages
 
 '''
 Sorts images into folders for indexing based on the category discoverted (vehicle, human, animal). In the event of two categories, vehicle gets priority, then person, then animal.
@@ -47,7 +46,8 @@ def process_directory():
     for file in files:
         basename = os.path.splitext(file)[0]
         json_file = os.path.join(evaling_dir, file+'.json')
-        detections_file = os.path.join(evaling_dir, basename+'_detections.mp4')
+        detections_file_basename = basename+'_detections.mp4'
+        detections_file = os.path.join(evaling_dir, detections_file_basename)
 
         # move to evaling dir to remove race condition
         shutil.move(os.path.join(uneval_dir, file), evaling_dir)
@@ -84,17 +84,18 @@ def process_directory():
             os.remove(os.path.join(evaling_dir, file)) # delete the motion file if nothing was in it
         else:
             # Move original video into correct folder
-            shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)]))
+            shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)], file))
             
             # move detections video into correct folder
-            shutil.move(detections_file, os.path.join(media_dir, categories[str(category)], 'detections/'))
+            shutil.move(detections_file, os.path.join(media_dir, categories[str(category)], 'detections/', detections_file_basename))
     
             # delete json file
             os.remove(json_file)
 
             if(category > email_category_threshold): # send email if a concerning category, normally > 1
                 hosted_file_location = os.path.join(hosted_name, categories[str(category)], file)
-                send_email(categories[str(category)], hosted_file_location)
+                detections_file_location = os.path.join(hosted_name, categories[str(category)], 'detections/', detections_file_basename)
+                send_email(categories[str(category)], hosted_file_location, detections_file_location)
 
 def check_dirs():
     if not os.path.exists(media_dir):

@@ -7,12 +7,12 @@ To make this work, you need to setup both the server side and camera side.
 3. Download model [here](https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb), more info on the [Megadetector github page](https://github.com/microsoft/CameraTraps/blob/master/megadetector.md)
 4. Install miniconda
 5. Install cameratraps-detector environment in Cameratraps
-6. Put libraries into conda environment: `cp -r CameraTraps/* ~/miniconda3/envs/cameratraps-detector/lib/python3.7/site-packages/
-cp -r ai4eutils/* ~/miniconda3/envs/cameratraps-detector/lib/python3.7/site-packages/`
-7. Set media directory in `monitor.py`
-8. Setup apache server (set installation directory in httpd.conf) and install as a service
-9. Remember to change document root to media folder in apache server
-10. Remove im.show() from cameratraps make video package
+6. In `CameraTraps/detection/video_utils.py` remove line `76` `cv2.imshow('video',frame)`.
+7. Put libraries into conda environment: `cp -r CameraTraps/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/
+cp -r ai4eutils/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/`
+9. Setup apache server (set installation directory and htdocs folder in httpd.conf) and install as a service
+10. Download openg264-1.7.0-win64.dll codec from [here](https://github.com/cisco/openh264/releases)
+
 
 
 # security_system
