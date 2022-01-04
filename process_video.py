@@ -19,8 +19,7 @@ from detection import run_tf_detector_batch
 from visualization import visualize_detector_output
 from ct_utils import args_to_object
 from detection.video_utils import video_to_frames
-#from detection.video_utils import frames_to_video
-import frames_to_video
+from detection.video_utils import frames_to_video
 from detection.video_utils import find_videos
 
 
@@ -88,7 +87,7 @@ def process_video(options):
             images_dir=frame_output_folder)
 
         # Combine into a video
-        frames_to_video.frames_to_video(detected_frame_files, Fs, options.output_video_file)
+        frames_to_video(detected_frame_files, Fs, options.output_video_file)
 
     if options.delete_output_frames:
         shutil.rmtree(tempdir)
