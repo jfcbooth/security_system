@@ -1,10 +1,30 @@
 #!/bin/bash
-local_sync_dir=/home/user/send/
-sync_ip=172.31.203.75
+local_sync_dir=/data/output/Camera1/
+sync_ip=172.28.10.95
 username=user
 remote_sync_dir=/mnt/c/Users/user/Desktop/security_system/unevaluated/
 sleep_time=60
 failover_time=30
+
+# move old files out of syncing directory
+for f in $(find "$local_sync_dir/.syncing" -type f -name "*.mp4"); do
+	mv $f $local_sync_dir/$(basename $f) # after the file has been written to, move it into the syncing directory
+        echo "Found $f stucking in .syncing/. It was moved out."
+done
+
+# check if syncing directory 1 exists
+if [ ! -d $local_sync_dir ]
+then
+        echo "Sync directory not found. Exiting."
+	exit
+fi
+
+# check if syncing directory exists
+if [ ! -d $local_sync_dir/.syncing/ ]
+then
+	mkdir $local_sync_dir/.syncing/
+	echo "Made $localsync_dir/.syncing/"
+fi
 
 while true; do
 	for f in $(find "$local_sync_dir" -type f -name "*.mp4" -mmin +1); do
