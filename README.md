@@ -1,19 +1,31 @@
 # Setup
 
-To make this work, you need to setup both the server side and camera side.
-## Server side installations
-1. Clone [CameraTraps](https://github.com/microsoft/CameraTraps)
-2. Clone [ai4eutils](https://github.com/microsoft/ai4eutils)
+## Server side setup
+This setup is fairly in-depth since the project specifiecations wanted a windows machine to be the server. THis requires a lot of workarounds, though most of elegant.  
+1. Install [miniconda](https://docs.conda.io/en/latest/miniconda.html#windows-installers) and create environment (`conda env create -f environment-detector.yml`)
+2. Clone [CameraTraps](https://github.com/microsoft/CameraTraps) and [ai4eutils](https://github.com/microsoft/ai4eutils) and move them into the anaconda environment (`cp -r CameraTraps/* ai4eutils/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/`)
 3. Download model [here](https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb), more info on the [Megadetector github page](https://github.com/microsoft/CameraTraps/blob/master/megadetector.md)
-4. Install miniconda
-5. Install cameratraps-detector environment in Cameratraps
-6. In `CameraTraps/detection/video_utils.py` remove line `76` `cv2.imshow('video',frame)`.
-7. Put libraries into conda environment: `cp -r CameraTraps/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/
-cp -r ai4eutils/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/`
-9. Setup apache server (set installation directory and htdocs folder in httpd.conf) and install as a service
-10. Download openg264-1.7.0-win64.dll codec from [here](https://github.com/cisco/openh264/releases)
+4. Install apache server. I used [Apache Lounge](https://www.apachelounge.com/download/) (set folder in httpd.conf) and enable start on boot (`Set-Service -Name Apache2.4 -StartupType 'Automatic'` from admin powershell)
+5. Install [cygwin](https://www.cygwin.com/) with rsync package and add bin to the path `C:\cygwin64\bin`
+6. Install openssh for windows by running the below commands in an admin powershell:
+	1. Check if it's installed: `Get-WindowsCapability -Online | ? Name -like 'OpenSSH*'`
+	2. If not, install it: `Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0`
+	3. Start service: `Start-Service sshd`
+	4. Check if its running: `Get-Service sshd`
+	5. Set to automatically start: `Set-Service -Name sshd -StartupType 'Automatic'`
+7. Test rsync installation
 
-
+## Rpi setup
+1. Install raspian lite
+2. Install rpi cam web interface
+3. Enable camera
+4. Enable ssh
+5. Write to wpa_supplicant
+6. Give static IP
+7. Setup config file
+8. clone repo
+9. run daemons
+10. set hostname
 
 # security_system
 
@@ -41,40 +53,11 @@ Make sure tensorflow-gpu is set in the environment-detector.yml file and install
 
 
 # Tasks:
-1. ~~Setup the CameraTrap repo on a docker, so I don't have a dependency headache later~~
-2. ~~Get the cameratrap repo to evaluate on an image to check if it's any good~~
-3. ~~Setup 1 motion detecting camera~~
-4. ~~feed it's footage into the cameratrap docker~~
-5. ~~send emails on certain detections~~
-6. attach video clip to email on detection
-6. Setup camera to record and detect motion
-7. daemonize sort.py
-8. daemonize camera & streamline setup
-
-
-12/18/21
-I got the inferencing working on an image, the results turned out pretty well. I want to run it on a video and see if it can output the identified animals
-One issue I had when doing video was the OpenCV library included was too old and giving an im.show() issue
-To solve it, I did:
-`sudo apt install libopencv-*
-conda remove opencv
-conda install -c conda-forge opencv=4.1.0`
-
-
-Hierarchy:
-/
-	unevaluated/ - where all motion detected clips are sent to be run through the model
-	vehicle/
-		bounding_boxes/
-		originals/
-	human/
-		bounding_boxes/
-		originals/
-	animal/
-		bounding_boxes/
-		originals/
-
-One problem I need to make sure of is if i just check the unanalyzed folder for videos to process, will os.path.list show partial file transfers? I am going to write file_transfer_test.py to test this
+1. Setup actual server with needed software
+2. Setup cameras to sync folder with windows
+3. Make cameras record constantly
+4. Setup way to pause cameras overwriting data
+5. Streamline camera setup
 
 # Cameras code:
 Command to move from remote system to local system, and delete file from remote system if necessary
