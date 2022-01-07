@@ -5,7 +5,13 @@ This setup is fairly in-depth since the project specifiecations wanted a windows
 1. Install [miniconda](https://docs.conda.io/en/latest/miniconda.html#windows-installers) and create environment (`conda env create -f environment-detector.yml`)
 2. Clone [CameraTraps](https://github.com/microsoft/CameraTraps) and [ai4eutils](https://github.com/microsoft/ai4eutils) and move them into the anaconda environment (`cp -r CameraTraps/* ai4eutils/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/`)
 3. Download model [here](https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb), more info on the [Megadetector github page](https://github.com/microsoft/CameraTraps/blob/master/megadetector.md)
-4. Install apache server. I used [Apache Lounge](https://www.apachelounge.com/download/) (set folder in httpd.conf) and enable start on boot (`Set-Service -Name Apache2.4 -StartupType 'Automatic'` from admin powershell)
+4. Install apache server. I used [Apache Lounge](https://www.apachelounge.com/download/)
+	1. Copy `Apache24` folder to `C:/Aapche24`.
+	2. Inside `C:/Aapche24/conf/httpd.conf`, change document directory to media directory. Ex. `C:\Users\boothm\Desktop\security_system/media`.
+	3. Test installation by opening an admin powershell and running `./httpd.exe` from `C:\Apache24\bin`
+	4. If all goes well, install as a service using `./httpd.exe -k install`.
+	5. Enable start on boot (`Set-Service -Name Apache2.4 -StartupType 'Automatic'`
+	6. Start service `Start-Service -Name Apache2.4` or reboot
 5. Install [cygwin](https://www.cygwin.com/) with rsync package and add bin to the path `C:\cygwin64\bin`
 6. Install openssh for windows by running the below commands in an admin powershell:
 	1. Check if it's installed: `Get-WindowsCapability -Online | ? Name -like 'OpenSSH*'`
