@@ -2,3 +2,7 @@ md_v4.1.0.pb
 media/
 .vscode/
 __pycache__/
+cameras/media/
+cameras/motion/
+cameras/motionLog.txt
+cameras/python_motion.log

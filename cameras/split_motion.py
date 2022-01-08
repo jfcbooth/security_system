@@ -7,10 +7,6 @@ import subprocess
 import tempfile
 import logging
 
-media_dir = 'media/'
-motion_dir = 'motion/'
-processing_dir = os.path.join(media_dir, '.processing/')
-logname = 'python_log.txt'
 
 def filename2numbers(filename):
     """converts input filename from camera to numbers
@@ -54,11 +50,10 @@ def to_datetime(time):
     time = str(time)
     return datetime.datetime(int(time[0:4]), int(time[4:6]), int(time[6:8]), int(time[8:10]), int(time[10:12]), int(time[12:14]))
 
-def make_dirs():
-    if not os.path.exists(motion_dir):
-        os.mkdir(motion_dir)
-    if not os.path.exists(processing_dir):
-        os.mkdir(processing_dir)
+def make_dirs(dirs):
+    for dir in dirs:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
 
 def motionlog2datetime(motionlog_entry):
     split = re.split('{|}|/|:|\s',motionlog_entry)
@@ -86,8 +81,14 @@ ap.add_argument("motion_file")
 ap.add_argument("--dry_run")
 args = ap.parse_args()
 
+home_dir = os.path.split(args.motion_file)[0]
+media_dir = os.path.join(home_dir, 'media/')
+motion_dir = os.path.join(home_dir, 'motion/')
+processing_dir = os.path.join(media_dir, '.processing/')
+logname = 'python_motion.log'
+
 # setup logger
-file_handler = logging.FileHandler(filename='python_motion.log')
+file_handler = logging.FileHandler(filename=logname)
 stdout_handler = logging.StreamHandler(sys.stdout)
 handlers = [file_handler, stdout_handler]
 
@@ -98,16 +99,15 @@ logging.basicConfig(
 )
 
 try:
-    make_dirs()
+    make_dirs([media_dir, motion_dir])
 except:
     logging.critical("Directories unable to be made")
 
 try:
     fp = open(args.motion_file, 'r+')
-    data = fp.read().split('\n')
+    data = [x for x in fp.read().split('\n') if x != '']
 except:
     logging.error("Motion file not found")
-
 
 while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of lines and there is data
 
@@ -161,8 +161,8 @@ while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of l
     video_end_time = filename2datetime(video_info['next_video'])
 
     if(video_end_time <= motion_end_time):
+        logging.debug("End time too close to end of video. video_end_time: {}, motion_end_time: {}".format(video_end_time, motion_end_time))
         motion_end_time = video_end_time - datetime.teimdelta(seconds=2) # subtract 2 seconds as a buffer
-        print("End time too close to end of video. Compensating...")
 
     motion_start_from_epoch = seconds_from_epoch(motion_start_time)
     video_start_from_epoch = seconds_from_epoch(video_start_time)
@@ -187,15 +187,15 @@ while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of l
     # input file, start time, end time, output file, times need to be in HH:MM:SS form
     # formats: HH:MM:SS for start of video
     #ffmpeg -i ORIGINALFILE.mp4 -acodec copy -vcodec copy -ss 00:15:00 -t 00:15:00 OUTFILE-2.mp4
-    logging.debug("Important values:\nvideo_start_time: {}\nvideo_end_time: {}\nmotion_start_from_epoch: {}\nvideo start_from_epoch: {}\
-        \nelapsed_time: {}\nstart_time_offset: {}\nend_time_offset: {}\nstart_time_offset_hhmmss: {}, end_time_offset_hhmmss: {}".format(\
+    logging.debug("Important values: video_start_time: {} video_end_time: {} motion_start_from_epoch: {} video start_from_epoch: {}\
+         elapsed_time: {} start_time_offset: {} end_time_offset: {} start_time_offset_hhmmss: {}, end_time_offset_hhmmss: {}".format(\
         video_start_time,video_end_time,motion_start_from_epoch,video_start_from_epoch,elapsed_time,start_time_offset,end_time_offset,\
             start_time_offset_hhmmss,end_time_offset_hhmmss))
     logging.info("Cutting {} from {} to {} to output file {}".format(video_info['motion_videos'][0], start_time_offset_hhmmss, \
         end_time_offset_hhmmss, output_filename))
 
     try:
-        command = "ffmpeg -y -i {} -acodec copy -vcodec copy -ss {} -to {} {}".format(video_info['motion_videos'][0], \
+        command = "ffmpeg -y -i {} -hide_banner -loglevel warning -acodec copy -vcodec copy -ss {} -to {} {}".format(video_info['motion_videos'][0], \
             start_time_offset_hhmmss, end_time_offset_hhmmss, output_filename)
         subprocess.call(command.split())
     except:
@@ -207,7 +207,7 @@ while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of l
 
     # remove motion entry from log
     if not args.dry_run:
-        print("Full motion event located, re-writing log without this entry...")
+        logging.debug("Full motion event written. Removing {} to {} from log.".format(motion_times[0], motion_times[1]))
         fp.seek(0)
         fp.write('\n'.join(data[2:]))
         fp.truncate()
