@@ -23,21 +23,6 @@ def filename2datetime(filename):
     numbers = str(filename2numbers(filename))
     return datetime.datetime(int(numbers[0:4]), int(numbers[4:6]), int(numbers[6:8]), int(numbers[8:10]), int(numbers[10:12]), int(numbers[12:14]))
 
-# def get_sec(time):
-#     """Get Seconds from time."""
-#     #HHMMSS
-#     h = 0
-#     m = 0
-#     s = 0
-#     if time > 9999:
-#         h = time//10000
-#         time = time-((time//10000)*10000)
-#     if time > 99:
-#         m = time//100
-#         time = time-((time//100)*100)
-#     s = time
-#     return int(h) * 3600 + int(m) * 60 + int(s)
-
 def to_datetime(time):
     """[summary]
 
@@ -60,8 +45,9 @@ def motionlog2datetime(motionlog_entry):
     return datetime.datetime(int(split[1]), int(split[2]), int(split[3]), int(split[4]), int(split[5]), int(split[6]))
 
 def check_motionlog_entry(motion_log_entries):
-    if not 'Motion start detected' in motion_log_entries[0] or not 'Motion stop detected' in motion_log_entries[1]:
-        logging.critical("Bad motion log entries 0: {} and 1: {}".format(motion_log_entries[0], motion_log_entries[1]))
+    if 'Motion start detected' in motion_log_entries[0] and 'Motion start detected' in motion_log_entries[1]:
+        return 1
+    if not ('Motion start detected' in motion_log_entries[0] and 'Motion stop detected' in motion_log_entries[1]):
         return -1
     return 0
 
@@ -105,16 +91,26 @@ except:
 
 try:
     fp = open(args.motion_file, 'r+')
-    data = [x for x in fp.read().split('\n') if x != '']
+    data = [x for x in fp.read().replace('\x00', '').split('\n') if x != '']
 except:
     logging.error("Motion file not found")
 
-while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of lines and there is data
+if(len(data) % 2 != 0):
+    logging.warning("Data is an odd number, bad data somewhere in log.")
 
+while len(data) > 0: # while there is an even number of lines and there is data
+    
     video_files = [os.path.join(media_dir,x) for x in os.listdir(media_dir) if x.endswith('.mp4')]
     #filename2numbers(video_files[0])
     motion_times = data[:2]
-    if check_motionlog_entry(motion_times): sys.exit()
+
+    if check_motionlog_entry(motion_times) == 1:
+        logging.warning("Double start event detected at 0: {} and 1: {}. Moving to next entry.".format(motion_times[0], motion_times[1]))
+        data = data[1:] # fix data then restart loop
+        continue
+    elif check_motionlog_entry(motion_times) == -1:
+        logging.critical("Bad motion log entries 0: {} and 1: {}".format(motion_times[0], motion_times[1]))
+        sys.exit()
 
     motion_start_time = motionlog2datetime(motion_times[0])
     motion_end_time = motionlog2datetime(motion_times[1])
@@ -122,6 +118,8 @@ while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of l
     logging.debug("Motion start time: {}, Motion end time: {}".format(motion_start_time, motion_end_time))
 
     # get video files that fall in time range
+
+    # handle no file being file w the correct name
     video_info = {'motion_videos': [], 'next_video': None}
     for i in range(len(video_files)-1):
         if motion_start_time >= filename2datetime(video_files[i]) and motion_start_time < filename2datetime(video_files[i+1]) :
@@ -131,6 +129,12 @@ while len(data) % 2 == 0 and len(data) > 0: # while there is an even number of l
                 video_info['motion_videos'].append(video_files[i])
             video_info['next_video'] = video_files[i]
             break
+        
+    if len(video_info['motion_videos'] == 0):
+        logging.critical("No videos found in the time range. Skipping entry.")
+        data = data[2:]
+        continue
+
     logging.debug("Videos found for time range: {}".format(video_info))
 
     # combine video files in motion occurs in multiple clips
