@@ -1,8 +1,8 @@
 #!/bin/bash
-local_sync_dir=/data/output/Camera1/
-sync_ip=172.28.10.95
-username=user
-remote_sync_dir=/mnt/c/Users/user/Desktop/security_system/unevaluated/
+local_sync_dir=/var/www/motion/
+sync_ip=10.0.0.30
+username=boothm
+remote_sync_dir=C:\\Users\\boothm\\Desktop\\security_system\\unevaluated\\
 sleep_time=60
 failover_time=30
 
@@ -23,7 +23,7 @@ fi
 if [ ! -d $local_sync_dir/.syncing/ ]
 then
 	mkdir $local_sync_dir/.syncing/
-	echo "Made $localsync_dir/.syncing/"
+	echo "Made $local_sync_dir/.syncing/"
 fi
 
 while true; do
@@ -36,6 +36,8 @@ while true; do
 			echo "Sync of $f fail. Retrying..."
 		done
 		echo "Sycned: $f"
+		echo "Deleting thumbnail"
+		rm $f.*.th.jpg
 	done
 	sleep $sleep_time
 done
