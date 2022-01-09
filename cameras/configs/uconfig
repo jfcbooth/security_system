@@ -1,0 +1,11 @@
+annotation Camera1_%Y.%M.%D_%h:%m:%s
+anno_text_size 75
+video_fps 5
+video_buffer 3000
+video_split 1800
+MP4Box_fps 5
+image_width 1920
+image_height 1080
+tl_interval 50
+motion_external 2
+motion_stopframes 25
