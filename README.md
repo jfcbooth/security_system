@@ -1,7 +1,7 @@
 # Setup
 
 ## Server side setup
-This setup is fairly in-depth since the project specifiecations wanted a windows machine to be the server. THis requires a lot of workarounds, though most of elegant.  
+This setup is fairly in-depth since the project specifiecations wanted a windows machine to be the server. This requires a lot of workarounds, though most are elegant.  
 1. Install [miniconda](https://docs.conda.io/en/latest/miniconda.html#windows-installers) and create environment (`conda env create -f environment-detector.yml`)
 2. Clone [CameraTraps](https://github.com/microsoft/CameraTraps) and [ai4eutils](https://github.com/microsoft/ai4eutils) and move them into the anaconda environment (`cp -r CameraTraps/* ai4eutils/* ~/miniconda3/envs/cameratraps-detector/Lib/site-packages/`)
 3. Download model [here](https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb), more info on the [Megadetector github page](https://github.com/microsoft/CameraTraps/blob/master/megadetector.md)

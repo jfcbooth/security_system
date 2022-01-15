@@ -30,8 +30,8 @@ while true; do
 	for f in $(find "$local_sync_dir" -type f -name "*.mp4" -mmin +1); do
 		mv $f $local_sync_dir/.syncing/$(basename $f) # after the file has been written to, move it into the syncing directory
 		echo "Syncing $f"
-		echo "Running: rsync --compress --remove-source-files --progress --partial --partial-dir=.rsync_partial/ $local_sync_dir/.syncing/$(basename $f) $username@$sync_ip:$remote_sync_dir/$(basename $f)"
-		while ! rsync --compress --remove-source-files --progress --partial --partial-dir=.rsync_partial/ $local_sync_dir/.syncing/$(basename $f) $username@$sync_ip:$remote_sync_dir/$(basename $f); do
+		echo "Running: rsync -e 'ssh -o StrictHostKeyChecking=no' --compress --remove-source-files --progress --partial --partial-dir=.rsync_partial/ $local_sync_dir/.syncing/$(basename $f) $username@$sync_ip:$remote_sync_dir/$(basename $f)"
+		while ! rsync -e "ssh -o StrictHostKeyChecking=no" --compress --remove-source-files --progress --partial --partial-dir=.rsync_partial/ $local_sync_dir/.syncing/$(basename $f) $username@$sync_ip:$remote_sync_dir/$(basename $f); do
 			sleep $failover_time; # restarts the rsync after 30 seconds if it fails. This is to make sure we don't DDOS the server when we get to scale
 			echo "Sync of $f fail. Retrying..."
 		done
