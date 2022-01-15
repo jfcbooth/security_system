@@ -15,6 +15,9 @@ def filename2datetime(filename):
     numbers = str(filename2numbers(filename))
     return datetime.datetime(int(numbers[0:4]), int(numbers[4:6]), int(numbers[6:8]), int(numbers[8:10]), int(numbers[10:12]), int(numbers[12:14]))
 
+def datetime2filename(datetime_obj):
+    return str(datetime_obj.strftime("%Y%m%d_%H%M%S"))
+
 def to_datetime(time):
     time = str(time)
     return datetime.datetime(int(time[0:4]), int(time[4:6]), int(time[6:8]), int(time[8:10]), int(time[10:12]), int(time[12:14]))
@@ -37,6 +40,10 @@ def check_motionlog_entry(motion_log_entries):
 
 def seconds_from_epoch(time):
      return (time - datetime.datetime(1970, 1, 1)) / datetime.timedelta(seconds=1)
+
+
+def reverse_seconds_from_epoch(time):
+    return (time + datetime.datetime(1970, 1, 1)) / datetime.timedelta(seconds=1)
 
 def get_hostname(hostname_file):
     try: 
@@ -68,7 +75,7 @@ stdout_handler = logging.StreamHandler(sys.stdout)
 handlers = [file_handler, stdout_handler]
 
 logging.basicConfig(
-    level=logging.INFO, 
+    level=logging.DEBUG, 
     format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
     handlers=handlers
 )
@@ -176,8 +183,9 @@ while len(data) > 0: # while there is an even number of lines and there is data
     # hostname first
     #output_filename = os.path.join(motion_dir, camera_name + '_' + os.path.basename(video_info['motion_videos'][0]).split('_',2)[-1])
     # hostname last
-    output_filename = os.path.join(motion_dir, os.path.splitext(os.path.basename(video_info['motion_videos'][0]).split('_',2)[-1])[0] + '_' + camera_name + '.mp4')
-
+    #output_filename = os.path.join(motion_dir, os.path.splitext(os.path.basename(video_info['motion_videos'][0]).split('_',2)[-1])[0] + '_' + camera_name + '.mp4')
+    output_filename = os.path.join(motion_dir, datetime2filename(motion_start_time) + '_' + camera_name + '.mp4')
+    print(output_filename)
     # input file, start time, end time, output file, times need to be in HH:MM:SS form
     # formats: HH:MM:SS for start of video
     #ffmpeg -i ORIGINALFILE.mp4 -acodec copy -vcodec copy -ss 00:15:00 -t 00:15:00 OUTFILE-2.mp4
