@@ -10,6 +10,7 @@ from ct_utils import args_to_object
 from send_email import send_email
 import logging
 from configparser import ConfigParser
+import time
 
 '''
 Sorts images into folders for indexing based on the category discoverted (vehicle, human, animal). In the event of two categories, vehicle gets priority, then person, then animal.
@@ -60,7 +61,7 @@ def process_directory():
         options.confidence_threshold = 0.8
         options.n_cores = 4
 
-        options.debug_max_frames = 3
+        options.debug_max_frames = -1
 
         # process the video
         process_video.process_video(options)
@@ -147,4 +148,6 @@ if __name__ == "__main__":
 
     check_dirs()
     clean_unevaluated_dir()
-    process_directory()
+    while True:
+        process_directory()
+        time.sleep(60)

@@ -6,3 +6,8 @@ cameras/media/
 cameras/motion/
 cameras/motionLog.txt
 cameras/python_motion.log
+motionLog.txt
+monitor.log
+motion/
+motion_logs/
+testing/
