@@ -8,8 +8,8 @@ failover_time=30
 
 # move old files out of syncing directory
 for f in $(find "$local_sync_dir/.syncing" -type f -name "*.mp4"); do
+    echo "Found $f stucking in .syncing/. It was moved out."
 	mv $f $local_sync_dir/$(basename $f) # after the file has been written to, move it into the syncing directory
-        echo "Found $f stucking in .syncing/. It was moved out."
 done
 
 # check if syncing directory 1 exists

@@ -6,7 +6,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 def send_email(category_name, video_file_loc, detections_file_loc):
-    msg_to = 'boothcrap@gmail.com'
+    msg_to = 'boothcamerasystem@gmail.com'
     msg_from = 'boothcamerasystem@gmail.com'
     gmail_password = 'grizzly2000'
     # Create message container - the correct MIME type is multipart/alternative.

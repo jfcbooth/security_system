@@ -8,18 +8,19 @@ import sys
 import process_video
 from ct_utils import args_to_object
 from send_email import send_email
+import logging
 
 '''
 Sorts images into folders for indexing based on the category discoverted (vehicle, human, animal). In the event of two categories, vehicle gets priority, then person, then animal.
 '''
 
+logname = 'monitor.log'
 media_dir = 'C:/Users/user/Desktop/security_system/media/'
 hosted_name = 'localhost'
 email_category_threshold = 0
 
 uneval_dir = os.path.join(media_dir,'unevaluated/')
-evaling_dir = os.path.join(uneval_dir, '.evaluating/')
-categories = {'0': 'none', '1': 'animal', '2': 'person', '3': 'vehicle'}
+categories = {'0': 'none', '1': 'animal', '2': 'vehicle', '3': 'person'}
 
 
 def find_category(json_file): # returns int of category
@@ -45,17 +46,17 @@ def process_directory():
     files = find_video_files(media_dir)
     for file in files:
         basename = os.path.splitext(file)[0]
-        json_file = os.path.join(evaling_dir, file+'.json')
+        json_file = os.path.join(uneval_dir, file+'.json')
         detections_file_basename = basename+'_detections.mp4'
-        detections_file = os.path.join(evaling_dir, detections_file_basename)
+        detections_file = os.path.join(uneval_dir, detections_file_basename)
 
         # move to evaling dir to remove race condition
-        shutil.move(os.path.join(uneval_dir, file), evaling_dir)
+        #shutil.move(os.path.join(uneval_dir, file), evaling_dir)
         
         # set process video options
         options = process_video.ProcessVideoOptions()
         options.model_file = 'md_v4.1.0.pb'
-        options.input_video_file = os.path.join(evaling_dir, file)
+        options.input_video_file = os.path.join(uneval_dir, file)
 
         options.output_json_file = json_file
         options.output_video_file = detections_file
@@ -65,7 +66,7 @@ def process_directory():
         options.reuse_results_if_available = False
 
         options.confidence_threshold = 0.8
-        options.n_cores = 3
+        options.n_cores = 4
 
         options.debug_max_frames = 3
 
@@ -76,15 +77,17 @@ def process_directory():
 
         # json file should always be there, even on no detections
         category = find_category(json_file)
-        print("Max category was: {}, or {} for {}".format(category, categories[str(category)], json_file))
+        logging.info("Max category was: {}, or {} for {}".format(category, categories[str(category)], json_file))
 
 	    # make output video in correct folder
 
-        if not category: # no detections were found
-            os.remove(os.path.join(evaling_dir, file)) # delete the motion file if nothing was in it
+        if category == 0: # no detections were found
+            os.remove(os.path.join(uneval_dir, file)) # delete the motion video file if nothing was in it
+            os.remove(json_file) # remove json file
+            os.remove(detections_file) # remove detections if it exists
         else:
             # Move original video into correct folder
-            shutil.move(os.path.join(evaling_dir, file), os.path.join(media_dir, categories[str(category)], file))
+            shutil.move(os.path.join(uneval_dir, file), os.path.join(media_dir, categories[str(category)], file))
             
             # move detections video into correct folder
             shutil.move(detections_file, os.path.join(media_dir, categories[str(category)], 'detections/', detections_file_basename))
@@ -95,31 +98,45 @@ def process_directory():
             if(category > email_category_threshold): # send email if a concerning category, normally > 1
                 hosted_file_location = os.path.join(hosted_name, categories[str(category)], file).replace("\\","/")
                 detections_file_location = os.path.join(hosted_name, categories[str(category)], 'detections/', detections_file_basename).replace("\\","/")
-                print(hosted_file_location)
-                print(detections_file_location)
                 send_email(categories[str(category)], hosted_file_location, detections_file_location)
 
 def check_dirs():
-    if not os.path.exists(media_dir):
-        print("Media directiory {} does not exist. Exiting.".format(media_dir))
-        sys.exit(-1)
-
-    
-    
-    # puts all directories into a single list
-    dirs = [uneval_dir, evaling_dir] + \
-            [os.path.join(media_dir, x[1]) and os.path.join(media_dir, x[1], 'detections/') for x in categories.items() if x[1] != 'none']
-    
+            # puts all directories into a single list
+    dirs = [media_dir, uneval_dir] + \
+            [os.path.join(media_dir, x[1]) for x in categories.items() if x[1] != 'none'] + \
+            [os.path.join(media_dir, x[1], 'detections/') for x in categories.items() if x[1] != 'none']
+        
     for dir in dirs:
         if not os.path.exists(dir):
             try:
                 os.mkdir(dir)
-                print("Directory: {} not found. Created.".format(dir))
+                logging.info("Directory: {} not found. Created.".format(dir))
             except:
-                print("Unable to make directory {}. Exiting.".format(dir))
+                logging.critical("Unable to make directory {}. Exiting.".format(dir))
                 sys.exit(-1)
-   
+
+def clean_unevaluated_dir():
+    filenames = [f for f in os.listdir(uneval_dir)]
+    for filename in filenames:
+        if not (filename.endswith(".mp4") and not 'detections' in filename):
+            os.remove(filename)
+            logging.debug("Removed {}".format(filename))
+        
 
 if __name__ == "__main__":
+    # setup logger
+    file_handler = logging.FileHandler(filename=logname)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    handlers = [file_handler, stdout_handler]
+
+    logging.basicConfig(
+        level=logging.DEBUG, 
+        format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+        handlers=handlers
+    )
+
+
+
     check_dirs()
+    clean_unevaluated_dir()
     process_directory()
