@@ -4,11 +4,12 @@ import shutil
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from configparser import ConfigParser
 
-def send_email(category_name, video_file_loc, detections_file_loc):
-    msg_to = 'boothcamerasystem@gmail.com'
-    msg_from = 'boothcamerasystem@gmail.com'
-    gmail_password = 'grizzly2000'
+def send_email(category_name, video_file_loc, detections_file_loc, email_config):
+    msg_to = email_config['to']
+    msg_from = email_config['from']
+    gmail_password = email_config['password']
     # Create message container - the correct MIME type is multipart/alternative.
     msg = MIMEMultipart('alternative')
 

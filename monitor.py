@@ -9,19 +9,11 @@ import process_video
 from ct_utils import args_to_object
 from send_email import send_email
 import logging
+from configparser import ConfigParser
 
 '''
 Sorts images into folders for indexing based on the category discoverted (vehicle, human, animal). In the event of two categories, vehicle gets priority, then person, then animal.
 '''
-
-logname = 'monitor.log'
-media_dir = 'C:/Users/user/Desktop/security_system/media/'
-hosted_name = 'localhost'
-email_category_threshold = 0
-
-uneval_dir = os.path.join(media_dir,'unevaluated/')
-categories = {'0': 'none', '1': 'animal', '2': 'vehicle', '3': 'person'}
-
 
 def find_category(json_file): # returns int of category
     if not os.path.exists(json_file):
@@ -36,14 +28,14 @@ def find_category(json_file): # returns int of category
                     category = int(detection['category'])
     return(category)
 
-def find_video_files(media_dir):
+def find_video_files():
     allowed_video_formats = ('.mp4', '.webm')
     filenames = [f for f in os.listdir(uneval_dir) if os.path.isfile(os.path.join(uneval_dir, f)) and f.lower().endswith(allowed_video_formats)] # extracts filenames
     return filenames
 
 # views added files to the evaluation directory
 def process_directory():
-    files = find_video_files(media_dir)
+    files = find_video_files()
     for file in files:
         basename = os.path.splitext(file)[0]
         json_file = os.path.join(uneval_dir, file+'.json')
@@ -55,7 +47,7 @@ def process_directory():
         
         # set process video options
         options = process_video.ProcessVideoOptions()
-        options.model_file = 'md_v4.1.0.pb'
+        options.model_file = model_file
         options.input_video_file = os.path.join(uneval_dir, file)
 
         options.output_json_file = json_file
@@ -96,9 +88,9 @@ def process_directory():
             os.remove(json_file)
 
             if(category > email_category_threshold): # send email if a concerning category, normally > 1
-                hosted_file_location = os.path.join(hosted_name, categories[str(category)], file).replace("\\","/")
-                detections_file_location = os.path.join(hosted_name, categories[str(category)], 'detections/', detections_file_basename).replace("\\","/")
-                send_email(categories[str(category)], hosted_file_location, detections_file_location)
+                hosted_file_location = os.path.join(server_ip, categories[str(category)], file).replace("\\","/")
+                detections_file_location = os.path.join(server_ip, categories[str(category)], 'detections/', detections_file_basename).replace("\\","/")
+                send_email(categories[str(category)], hosted_file_location, detections_file_location, email_config)
 
 def check_dirs():
             # puts all directories into a single list
@@ -124,6 +116,24 @@ def clean_unevaluated_dir():
         
 
 if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("conf_file")
+    args = ap.parse_args()
+
+    config = ConfigParser()
+    config.read(args.conf_file)
+
+    logname = config.get('server', 'logfile')
+    media_dir = config.get('server', 'media_dir')
+    server_ip = config.get('server', 'server_ip')
+    email_category_threshold = config.get('server', 'email_category_threshold')
+    uneval_dir = os.path.join(media_dir,config.get('server', 'uneval_dir'))
+    model_file = config.get('server', 'model_file')
+
+    categories = dict(config.items('categories'))
+
+    email_config = dict(config.items('email'))
+
     # setup logger
     file_handler = logging.FileHandler(filename=logname)
     stdout_handler = logging.StreamHandler(sys.stdout)
@@ -134,8 +144,6 @@ if __name__ == "__main__":
         format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
         handlers=handlers
     )
-
-
 
     check_dirs()
     clean_unevaluated_dir()

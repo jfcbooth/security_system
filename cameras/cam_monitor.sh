@@ -36,8 +36,6 @@ while true; do
 			echo "Sync of $f fail. Retrying..."
 		done
 		echo "Sycned: $f"
-		echo "Deleting thumbnail"
-		rm $f.*.th.jpg
 	done
 	sleep $sleep_time
 done
