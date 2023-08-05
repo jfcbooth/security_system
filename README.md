@@ -11,7 +11,7 @@ After setting up the camera nodes and web server, on detection, the user gets an
 
 ![Detection Email](images/detection_email.png)
 
-The video would look like this:
+The superimposed video would look like this:
 
 ![Detection gif](images/20220117_201946_camera1_detections.gif)
 
