@@ -1,3 +1,21 @@
+# Security System
+
+This security system setup was a custom solution developed that can be:
+1. Powered via solar power
+2. Works on weak, unstable Wi-Fi or other wireless  medium
+3. Can detect humans, vehicles and animals and perform real-time alerts on detection of humans and vehicles
+4. Store 2 weeks of footage locally
+5. Scalable
+
+After setting up the camera nodes and web server, on detection, the user gets and email like this containing the original video and the superimposed detections:
+
+![Detection Email](images/detection_email.png)
+
+The video would look like this:
+
+![Detection gif](images/20220117_201946_camera1_detections.gif)
+
+
 # Setup
 
 ## Server side setup
