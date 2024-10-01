@@ -42,7 +42,7 @@ This setup is fairly in-depth since the cliented wanted the server to run on a w
 	2. Inside `C:/Aapche24/conf/httpd.conf`, change document directory to media directory. Ex. `C:\Users\boothm\Desktop\security_system/media`.
 	3. Test installation by opening an admin powershell and running `./httpd.exe` from `C:\Apache24\bin`
 	4. If all goes well, install as a service using `./httpd.exe -k install`.
-	5. Enable start on boot (`Set-Service -Name Apache2.4 -StartupType 'Automatic'`
+	5. Enable start on boot `Set-Service -Name Apache2.4 -StartupType 'Automatic'`
 	6. Start service `Start-Service -Name Apache2.4` or reboot
 5. Install [cygwin](https://www.cygwin.com/) with rsync, openssh and openssl packages and add bin to the path `C:\cygwin64\bin`
 6. Setup openssh using [this](https://docs.oracle.com/cd/E24628_01/install.121/e22624/preinstall_req_cygwin_ssh.htm#EMBSC281) guide
